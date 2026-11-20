@@ -12,7 +12,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
+import com.bridgelabz.hospitalmanagementsystem.config.JwtService;
+import com.bridgelabz.hospitalmanagementsystem.dto.AuthResponse;
 /**
  * Registers user accounts and verifies login credentials.
  */
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public void registerUser(AuthRequest request) {
@@ -52,6 +54,11 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    public AuthResponse loginUser(AuthRequest request) {
+        String email = authenticate(request);
+        String token = jwtService.generateToken(email);
+        return new AuthResponse(token, "Login successful");
+    }
     public String authenticate(AuthRequest request) {
         if (!isValidPasswordLength(request.getPassword())) {
             throw invalidCredentials();
